@@ -1,4 +1,4 @@
-package Scenarios
+package scenarios
 
 import (
 	"GoSeleniumExample/util"

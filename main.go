@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	"GoSeleniumExample/Scenarios"
+	"GoSeleniumExample/scenarios"
 
 	"github.com/fedesog/webdriver"
 )
@@ -41,7 +41,7 @@ func main() {
 		go func(number int) {
 			log.Println("start connect", number)
 			conn := initConnection(number)
-			Scenarios.Hello(conn.sess)
+			scenarios.Hello(conn.sess)
 			connectionsCh <- conn
 		}(i)
 	}
