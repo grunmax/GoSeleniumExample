@@ -30,14 +30,14 @@ func initConnection(i int) connection {
 }
 
 func main() {
-	var COUNT = 5
+	var BROWSERS_COUNT = 5
 
 	connectionsCh := make(chan connection)
 
 	var wg sync.WaitGroup
-	wg.Add(COUNT)
+	wg.Add(BROWSERS_COUNT)
 
-	for i := 0; i < COUNT; i++ {
+	for i := 0; i < BROWSERS_COUNT; i++ {
 		go func(number int) {
 			log.Println("start connect", number)
 			conn := initConnection(number)
