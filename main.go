@@ -4,7 +4,9 @@ import (
 	"log"
 	"sync"
 
-	"GoSeleniumExample/scenarios"
+	"github.com/grunmax/GoSeleniumExample/scenarios"
+
+	"runtime"
 
 	"github.com/fedesog/webdriver"
 )
@@ -16,11 +18,25 @@ type connection struct {
 }
 
 func initConnection(i int) connection {
-	driver := webdriver.NewChromeDriver("chromedriver.exe")
+
+	os_ := func() (string, string) {
+		switch runtime.GOOS {
+		case "windows":
+			return "chromedriver.exe", "Windows"
+		case "linux":
+			return "chromedriver", "Linux"
+		default:
+			panic("OS not supported")
+		}
+	}
+
+	drivername, osname := os_()
+
+	driver := webdriver.NewChromeDriver(drivername)
 	if err := driver.Start(); err != nil {
 		log.Panic(err)
 	}
-	desired := webdriver.Capabilities{"Platform": "Windows"}
+	desired := webdriver.Capabilities{"Platform": osname}
 	required := webdriver.Capabilities{}
 	session, err := driver.NewSession(desired, required)
 	if err != nil {
@@ -30,7 +46,7 @@ func initConnection(i int) connection {
 }
 
 func main() {
-	var BROWSERS_COUNT = 5
+	var BROWSERS_COUNT = 3
 
 	connectionsCh := make(chan connection)
 
@@ -39,10 +55,15 @@ func main() {
 
 	for i := 0; i < BROWSERS_COUNT; i++ {
 		go func(number int) {
-			log.Println("start connect", number)
-			conn := initConnection(number)
-			scenarios.Hello(conn.sess)
-			connectionsCh <- conn
+			if scenario := scenarios.ScenaMap[number]; scenario != nil {
+				log.Println("start scenario:", number)
+				conn := initConnection(number)
+				scenario(conn.sess)
+				connectionsCh <- conn
+			} else {
+				log.Println("no scenario for:", number)
+				wg.Done()
+			}
 		}(i)
 	}
 
