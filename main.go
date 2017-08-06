@@ -12,7 +12,7 @@ var (
 	connectionsChan chan Connection
 	scenariosChan   chan Scenario
 	osinfo          OsInfo
-	BROWSERS_MAX    = 3
+	BROWSERS_MAX    = 2
 )
 
 func init() {
@@ -33,7 +33,6 @@ func init() {
 
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(len(scenarios.ScenaMap))
 	defer close(scenariosChan)
 	defer close(connectionsChan)
 
@@ -53,6 +52,7 @@ func main() {
 
 	for name, scenario := range scenarios.ScenaMap {
 		if scenario != nil {
+			wg.Add(1)
 			scenariosChan <- Scenario{name, scenario}
 		} else {
 			log.Println("no scenario for:", name)

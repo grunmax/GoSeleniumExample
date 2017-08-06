@@ -11,6 +11,7 @@ var ScenaMap = map[string]func(*webdriver.Session){
 	"scena2": scenario2,
 	"scena3": scenario3,
 	"scena4": scenario4,
+	"scena5": scenario4,
 }
 
 func scenario1(session *webdriver.Session) {
@@ -34,5 +35,11 @@ func scenario3(session *webdriver.Session) {
 func scenario4(session *webdriver.Session) {
 	foo.OpenUrl(session, "https://www.google.com.ua")
 	foo.FindbyIDAndSendKeys(session, "lst-ib", "Someone Like You")
+	foo.Wait4XpathAndClick(session, "//div[@class='_PWc']//a")
+}
+
+func scenario5(session *webdriver.Session) {
+	foo.OpenUrl(session, "https://www.google.com.ua")
+	foo.FindbyIDAndSendKeys(session, "lst-ib", "Hello")
 	foo.Wait4XpathAndClick(session, "//div[@class='_PWc']//a")
 }
