@@ -2,80 +2,62 @@ package main
 
 import (
 	"log"
+	"runtime"
 	"sync"
 
 	"github.com/grunmax/GoSeleniumExample/scenarios"
-
-	"runtime"
-
-	"github.com/fedesog/webdriver"
 )
 
-type connection struct {
-	i    int
-	drv  *webdriver.ChromeDriver
-	sess *webdriver.Session
-}
+var (
+	connectionsChan chan Connection
+	scenariosChan   chan Scenario
+	osinfo          OsInfo
+	BROWSERS_MAX    = 3
+)
 
-func initConnection(i int) connection {
-
-	os_ := func() (string, string) {
+func init() {
+	os_ := func() OsInfo {
 		switch runtime.GOOS {
 		case "windows":
-			return "chromedriver.exe", "Windows"
+			return OsInfo{"chromedriver.exe", "Windows"}
 		case "linux":
-			return "chromedriver", "Linux"
+			return OsInfo{"chromedriver", "Linux"}
 		default:
 			panic("OS not supported")
 		}
 	}
-
-	drivername, osname := os_()
-
-	driver := webdriver.NewChromeDriver(drivername)
-	if err := driver.Start(); err != nil {
-		log.Panic(err)
-	}
-	desired := webdriver.Capabilities{"Platform": osname}
-	required := webdriver.Capabilities{}
-	session, err := driver.NewSession(desired, required)
-	if err != nil {
-		log.Panic(err)
-	}
-	return connection{i, driver, session}
+	osinfo = os_()
+	connectionsChan = make(chan Connection)
+	scenariosChan = make(chan Scenario)
 }
 
 func main() {
-	var BROWSERS_COUNT = 3
-
-	connectionsCh := make(chan connection)
-
 	var wg sync.WaitGroup
-	wg.Add(BROWSERS_COUNT)
-
-	for i := 0; i < BROWSERS_COUNT; i++ {
-		go func(number int) {
-			if scenario := scenarios.ScenaMap[number]; scenario != nil {
-				log.Println("start scenario:", number)
-				conn := initConnection(number)
-				scenario(conn.sess)
-				connectionsCh <- conn
-			} else {
-				log.Println("no scenario for:", number)
-				wg.Done()
-			}
-		}(i)
-	}
+	wg.Add(len(scenarios.ScenaMap))
+	defer close(scenariosChan)
+	defer close(connectionsChan)
 
 	go func() {
 		for {
-			conn := <-connectionsCh
+			conn := <-connectionsChan
 			conn.sess.Delete()
 			conn.drv.Stop()
-			log.Println("del connect:", conn.i)
+			log.Println("del connect:", conn.name)
 			wg.Done()
 		}
 	}()
+
+	for i := 1; i <= BROWSERS_MAX; i++ {
+		go worker(i, scenariosChan)
+	}
+
+	for name, scenario := range scenarios.ScenaMap {
+		if scenario != nil {
+			scenariosChan <- Scenario{name, scenario}
+		} else {
+			log.Println("no scenario for:", name)
+		}
+	}
 
 	wg.Wait()
 }
