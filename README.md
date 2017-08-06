@@ -1,2 +1,2 @@
 # GoSeleniumExample
-Golang. Parallel Testing With Selenium Webdriver. Worker pool used.
+Golang. Parallel Testing With Selenium Webdriver. Workers pool used.
