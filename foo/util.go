@@ -2,7 +2,6 @@ package foo
 
 import (
 	"log"
-	"time"
 
 	"github.com/fedesog/webdriver"
 )
@@ -37,7 +36,6 @@ func FindbyIDAndSendKeys(sess *webdriver.Session, id string, value string) {
 
 func Wait4XpathAndClick(sess *webdriver.Session, xpath string) {
 	if w, err := sess.FindElement(webdriver.XPath, xpath); err != nil {
-		time.Sleep(1 * time.Second)
 		wait4Ready(sess)
 		log.Println("wait for xpath =", xpath)
 		Wait4XpathAndClick(sess, xpath)
