@@ -11,7 +11,7 @@ var ScenaMap = map[string]func(*webdriver.Session){
 	"scena2": scenario2,
 	"scena3": scenario3,
 	"scena4": scenario4,
-	"scena5": scenario4,
+	"scena5": scenario5,
 }
 
 func scenario1(session *webdriver.Session) {
